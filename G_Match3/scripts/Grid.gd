@@ -15,12 +15,18 @@ preload("res://scenes/PinkPiece.tscn"),
 preload("res://scenes/YellowPiece.tscn")
 ]
 var all_pieces := []
+var first_touch: Vector2
+var final_touch: Vector2
 
 
 func _ready():
 	randomize()
 	all_pieces = make_2d_array()
 	spawn_pieces()
+
+
+func _process(delta):
+	touch_input()
 
 
 func make_2d_array():
@@ -63,6 +69,19 @@ func grid_to_pixel(column, row):
 	var new_y = y_start - offset * row
 	return Vector2(new_x, new_y)
 
+
+func pixel_to_grid(pixel_x, pixel_y):
+	var new_x = round((pixel_x - x_start) / offset)
+	var new_y = round((pixel_y - y_start) / -offset)
+	return Vector2(new_x, new_y)
+
+
+func touch_input():
+	if Input.is_action_just_pressed("ui_touch"):
+		first_touch = get_global_mouse_position()
+		var grid_position = pixel_to_grid(first_touch.x, first_touch.y)
+	if Input.is_action_just_released("ui_touch"):
+		final_touch = get_global_mouse_position()
 
 
 
