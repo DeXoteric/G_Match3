@@ -16,6 +16,7 @@ _global_script_class_icons={
 [application]
 
 config/name="G_Match3"
+run/main_scene="res://scenes/GameWIndow.tscn"
 config/icon="res://icon.png"
 
 [display]
