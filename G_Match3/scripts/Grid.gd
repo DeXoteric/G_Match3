@@ -22,6 +22,11 @@ var all_pieces := []
 var first_touch: Vector2
 var final_touch: Vector2
 var controlling := false
+var piece_one = null
+var piece_two = null
+var last_place := Vector2.ZERO
+var last_direction := Vector2.ZERO
+var move_checked = false
 
 
 func _ready():
@@ -106,12 +111,28 @@ func swap_pieces(column, row, direction):
 	var first_piece = all_pieces[column][row]
 	var other_piece = all_pieces[column + direction.x][row + direction.y]
 	if first_piece != null && other_piece != null:
+		store_info(first_piece, other_piece, Vector2(column, row), direction)
 		state = WAIT
 		all_pieces[column][row] = other_piece
 		all_pieces[column + direction.x][row + direction.y] = first_piece
 		first_piece.move(grid_to_pixel(column + direction.x, row + direction.y))
 		other_piece.move(grid_to_pixel(column, row))
-		find_matches()
+		if !move_checked:
+			find_matches()
+
+
+func store_info(first_piece, other_piece, place, direction):
+	piece_one = first_piece
+	piece_two = other_piece
+	last_place = place
+	last_direction = direction
+
+
+func swap_back():
+	if piece_one != null && piece_two != null:
+		swap_pieces(last_place.x, last_place.y, last_direction)
+	state = MOVE
+	move_checked = false
 
 
 func touch_difference(grid_1, grid_2):
@@ -155,13 +176,19 @@ func find_matches():
 
 
 func destroy_matched():
+	var was_matched = false
 	for i in width:
 		for j in height:
 			if all_pieces[i][j] != null:
 				if all_pieces[i][j].matched:
+					was_matched = true
 					all_pieces[i][j].queue_free()
 					all_pieces[i][j] = null
-	get_parent().get_node("CollapseTimer").start()
+	move_checked = true
+	if was_matched:
+		get_parent().get_node("CollapseTimer").start()
+	else:
+		swap_back()
 
 
 func collapse_columns():
@@ -204,6 +231,7 @@ func after_refill():
 					#get_parent().get_node("DestroyTimer").start()
 					return
 	state = MOVE
+	move_checked = false
 
 
 func _on_DestroyTimer_timeout():
