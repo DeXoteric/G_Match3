@@ -5,6 +5,7 @@ export var height: int
 export var x_start: int
 export var y_start: int
 export var offset: int
+export var y_offset: int
 
 var possible_pieces = [
 preload("res://scenes/BluePiece.tscn"),
@@ -182,7 +183,8 @@ func refill_columns():
 					loops += 1
 					piece = possible_pieces[rand].instance()
 				add_child(piece)
-				piece.position = grid_to_pixel(i, j)
+				piece.position = grid_to_pixel(i, j + y_offset)
+				piece.move(grid_to_pixel(i, j))
 				all_pieces[i][j] = piece
 
 
