@@ -1,5 +1,8 @@
 extends Node2D
 
+enum {WAIT, MOVE}
+var state
+
 export var width: int
 export var height: int
 export var x_start: int
@@ -22,13 +25,15 @@ var controlling := false
 
 
 func _ready():
+	state = MOVE
 	randomize()
 	all_pieces = make_2d_array()
 	spawn_pieces()
 
 
 func _process(delta):
-	touch_input()
+	if state == MOVE:
+		touch_input()
 
 
 func make_2d_array():
@@ -101,6 +106,7 @@ func swap_pieces(column, row, direction):
 	var first_piece = all_pieces[column][row]
 	var other_piece = all_pieces[column + direction.x][row + direction.y]
 	if first_piece != null && other_piece != null:
+		state = WAIT
 		all_pieces[column][row] = other_piece
 		all_pieces[column + direction.x][row + direction.y] = first_piece
 		first_piece.move(grid_to_pixel(column + direction.x, row + direction.y))
@@ -186,6 +192,18 @@ func refill_columns():
 				piece.position = grid_to_pixel(i, j + y_offset)
 				piece.move(grid_to_pixel(i, j))
 				all_pieces[i][j] = piece
+	after_refill()
+
+
+func after_refill():
+	for i in width:
+		for j in height:
+			if all_pieces[i][j] != null:
+				if match_at(i, j, all_pieces[i][j].color):
+					find_matches()
+					#get_parent().get_node("DestroyTimer").start()
+					return
+	state = MOVE
 
 
 func _on_DestroyTimer_timeout():
