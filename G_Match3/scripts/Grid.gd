@@ -11,6 +11,7 @@ export var offset: int
 export var y_offset: int
 export var empty_spaces: PoolVector2Array
 export var ice_spaces: PoolVector2Array
+export var lock_spaces: PoolVector2Array
 
 var possible_pieces = [
 preload("res://scenes/BluePiece.tscn"),
@@ -32,6 +33,8 @@ var move_checked = false
 
 signal make_ice
 signal damage_ice
+signal make_lock
+signal damage_lock
 
 
 func _ready():
@@ -40,6 +43,7 @@ func _ready():
 	all_pieces = make_2d_array()
 	spawn_pieces()
 	spawn_ice()
+	spawn_locks()
 
 
 func _process(delta):
@@ -49,6 +53,12 @@ func _process(delta):
 
 func restricted_fill(place):
 	if is_in_array(empty_spaces, place):
+		return true
+	return false
+
+
+func restricted_move(place):
+	if is_in_array(lock_spaces, place):
 		return true
 	return false
 
@@ -88,6 +98,11 @@ func spawn_pieces():
 func spawn_ice():
 	for i in ice_spaces.size():
 		emit_signal("make_ice", ice_spaces[i])
+
+
+func spawn_locks():
+	for i in lock_spaces.size():
+		emit_signal("make_lock", lock_spaces[i])
 
 
 func match_at(i, j, color):
@@ -136,14 +151,15 @@ func swap_pieces(column, row, direction):
 	var first_piece = all_pieces[column][row]
 	var other_piece = all_pieces[column + direction.x][row + direction.y]
 	if first_piece != null && other_piece != null:
-		store_info(first_piece, other_piece, Vector2(column, row), direction)
-		state = WAIT
-		all_pieces[column][row] = other_piece
-		all_pieces[column + direction.x][row + direction.y] = first_piece
-		first_piece.move(grid_to_pixel(column + direction.x, row + direction.y))
-		other_piece.move(grid_to_pixel(column, row))
-		if !move_checked:
-			find_matches()
+		if !restricted_move(Vector2(column, row)) && !restricted_move(Vector2(column, row) + direction):
+			store_info(first_piece, other_piece, Vector2(column, row), direction)
+			state = WAIT
+			all_pieces[column][row] = other_piece
+			all_pieces[column + direction.x][row + direction.y] = first_piece
+			first_piece.move(grid_to_pixel(column + direction.x, row + direction.y))
+			other_piece.move(grid_to_pixel(column, row))
+			if !move_checked:
+				find_matches()
 
 
 func store_info(first_piece, other_piece, place, direction):
@@ -211,7 +227,7 @@ func destroy_matched():
 		for j in height:
 			if all_pieces[i][j] != null:
 				if all_pieces[i][j].matched:
-					emit_signal("damage_ice", Vector2(i, j))
+					damage_special(i, j)
 					was_matched = true
 					all_pieces[i][j].queue_free()
 					all_pieces[i][j] = null
@@ -220,6 +236,11 @@ func destroy_matched():
 		get_parent().get_node("CollapseTimer").start()
 	else:
 		swap_back()
+
+
+func damage_special(column, row):
+	emit_signal("damage_ice", Vector2(column, row))
+	emit_signal("damage_lock", Vector2(column, row))
 
 
 func collapse_columns():
@@ -276,6 +297,8 @@ func _on_RefillTimer_timeout():
 	refill_columns()
 
 
-
-
+func _on_LockHolder_remove_lock(place):
+	for i in range(lock_spaces.size() - 1, -1, -1):
+		if lock_spaces[i] == place:
+			lock_spaces.remove(i)
 
