@@ -24,6 +24,7 @@ preload("res://scenes/PinkPiece.tscn"),
 preload("res://scenes/YellowPiece.tscn")
 ]
 var all_pieces := []
+var current_matches := []
 var first_touch: Vector2
 var final_touch: Vector2
 var controlling := false
@@ -105,7 +106,7 @@ func spawn_pieces():
 				var rand = floor(rand_range(0, possible_pieces.size()))
 				var piece = possible_pieces[rand].instance()
 				var loops = 0
-				while(match_at(i, j, piece.color) && loops < 100):
+				while(match_at(i, j, piece.color) and loops < 100):
 					rand = floor(rand_range(0, possible_pieces.size()))
 					loops += 1
 					piece = possible_pieces[rand].instance()
@@ -136,12 +137,12 @@ func spawn_slime():
 
 func match_at(i, j, color):
 	if i > 1:
-		if all_pieces[i - 1][j] != null && all_pieces[i - 2][j] != null:
-			if all_pieces[i - 1][j].color == color && all_pieces[i - 2][j].color == color:
+		if all_pieces[i - 1][j] != null and all_pieces[i - 2][j] != null:
+			if all_pieces[i - 1][j].color == color and all_pieces[i - 2][j].color == color:
 				return true
 	if j > 1:
-		if all_pieces[i][j - 1] != null && all_pieces[i][j - 2] != null:
-			if all_pieces[i][j - 1].color == color && all_pieces[i][j - 2].color == color:
+		if all_pieces[i][j - 1] != null and all_pieces[i][j - 2] != null:
+			if all_pieces[i][j - 1].color == color and all_pieces[i][j - 2].color == color:
 				return true
 
 
@@ -158,8 +159,8 @@ func pixel_to_grid(pixel_x, pixel_y):
 
 
 func is_in_grid(grid_position):
-	if grid_position.x >= 0 && grid_position.x < width:
-		if grid_position.y >= 0 && grid_position.y < height:
+	if grid_position.x >= 0 and grid_position.x < width:
+		if grid_position.y >= 0 and grid_position.y < height:
 			return true
 	return false
 
@@ -170,7 +171,7 @@ func touch_input():
 			controlling = true
 			first_touch = pixel_to_grid(get_global_mouse_position().x, get_global_mouse_position().y)
 	if Input.is_action_just_released("ui_touch"):
-		if is_in_grid(pixel_to_grid(get_global_mouse_position().x, get_global_mouse_position().y)) && controlling:
+		if is_in_grid(pixel_to_grid(get_global_mouse_position().x, get_global_mouse_position().y)) and controlling:
 			controlling = false
 			final_touch = pixel_to_grid(get_global_mouse_position().x, get_global_mouse_position().y)
 			touch_difference(first_touch, final_touch)
@@ -179,8 +180,8 @@ func touch_input():
 func swap_pieces(column, row, direction):
 	var first_piece = all_pieces[column][row]
 	var other_piece = all_pieces[column + direction.x][row + direction.y]
-	if first_piece != null && other_piece != null:
-		if !restricted_move(Vector2(column, row)) && !restricted_move(Vector2(column, row) + direction):
+	if first_piece != null and other_piece != null:
+		if !restricted_move(Vector2(column, row)) and !restricted_move(Vector2(column, row) + direction):
 			store_info(first_piece, other_piece, Vector2(column, row), direction)
 			state = WAIT
 			all_pieces[column][row] = other_piece
@@ -199,7 +200,7 @@ func store_info(first_piece, other_piece, place, direction):
 
 
 func swap_back():
-	if piece_one != null && piece_two != null:
+	if piece_one != null and piece_two != null:
 		swap_pieces(last_place.x, last_place.y, last_direction)
 	state = MOVE
 	move_checked = false
@@ -224,19 +225,30 @@ func find_matches():
 		for j in height:
 			if all_pieces[i][j] != null:
 				var current_color = all_pieces[i][j].color
-				if i > 0 && i < width - 1:
-					if !is_piece_null(i - 1, j) && !is_piece_null(i + 1, j):
-						if all_pieces[i - 1][j].color == current_color && all_pieces[i + 1][j].color == current_color:
+				if i > 0 and i < width - 1:
+					if !is_piece_null(i - 1, j) and !is_piece_null(i + 1, j):
+						if all_pieces[i - 1][j].color == current_color and all_pieces[i + 1][j].color == current_color:
 							match_and_dim(all_pieces[i - 1][j])
 							match_and_dim(all_pieces[i][j])
 							match_and_dim(all_pieces[i + 1][j])
-				if j > 0 && j < height - 1:
-					if !is_piece_null(i, j - 1) && !is_piece_null(i, j + 1):
-						if all_pieces[i][j - 1].color == current_color && all_pieces[i][j + 1].color == current_color:
+							add_to_array(Vector2(i, j))
+							add_to_array(Vector2(i + 1, j))
+							add_to_array(Vector2(i - 1, j))
+				if j > 0 and j < height - 1:
+					if !is_piece_null(i, j - 1) and !is_piece_null(i, j + 1):
+						if all_pieces[i][j - 1].color == current_color and all_pieces[i][j + 1].color == current_color:
 							match_and_dim(all_pieces[i][j - 1])
 							match_and_dim(all_pieces[i][j])
 							match_and_dim(all_pieces[i][j + 1])
+							add_to_array(Vector2(i, j))
+							add_to_array(Vector2(i, j + 1))
+							add_to_array(Vector2(i, j - 1))
 	get_parent().get_node("DestroyTimer").start()
+
+
+func add_to_array(value, array_to_add = current_matches):
+	if !array_to_add.has(value):
+		array_to_add.append(value)
 
 
 func is_piece_null(column, row):
@@ -250,7 +262,33 @@ func match_and_dim(item):
 	item.dim()
 
 
+func find_bombs():
+	for i in current_matches.size():
+		var current_column = current_matches[i].x
+		var current_row = current_matches[i].y
+		var current_color = all_pieces[current_column][current_row].color
+		var col_matched = 0
+		var row_matched = 0
+		for j in current_matches.size():
+			var this_column = current_matches[j].x
+			var this_row = current_matches[j].y
+			var this_color = all_pieces[current_column][current_row].color
+			if this_column == current_column and this_color == current_color:
+				col_matched += 1
+			if this_row == current_row and this_color == current_color:
+				row_matched += 1
+		if col_matched == 4:
+			print("column bomb")
+		if row_matched == 4:
+			print("row bomb")
+		if col_matched == 3 and row_matched == 3:
+			print ("adjacent bomb")
+		if col_matched == 5 or row_matched == 5:
+			print("color bomb")
+
+
 func destroy_matched():
+	find_bombs()
 	var was_matched = false
 	for i in width:
 		for j in height:
@@ -265,6 +303,7 @@ func destroy_matched():
 		get_parent().get_node("CollapseTimer").start()
 	else:
 		swap_back()
+	current_matches.clear()
 
 
 func check_concrete(column, row):
@@ -299,7 +338,7 @@ func damage_special(column, row):
 func collapse_columns():
 	for i in width:
 		for j in height:
-			if all_pieces[i][j] == null && !restricted_fill(Vector2(i, j)):
+			if all_pieces[i][j] == null and !restricted_fill(Vector2(i, j)):
 				for k in range(j + 1, height):
 					if all_pieces[i][k] != null:
 						all_pieces[i][k].move(grid_to_pixel(i, j))
@@ -312,11 +351,11 @@ func collapse_columns():
 func refill_columns():
 	for i in width:
 		for j in height:
-			if all_pieces[i][j] == null && !restricted_fill(Vector2(i, j)):
+			if all_pieces[i][j] == null and !restricted_fill(Vector2(i, j)):
 				var rand = floor(rand_range(0, possible_pieces.size()))
 				var piece = possible_pieces[rand].instance()
 				var loops = 0
-				while(match_at(i, j, piece.color) && loops < 100):
+				while(match_at(i, j, piece.color) and loops < 100):
 					rand = floor(rand_range(0, possible_pieces.size()))
 					loops += 1
 					piece = possible_pieces[rand].instance()
@@ -345,7 +384,7 @@ func generate_slime():
 	if slime_spaces.size() > 0:
 		var slime_made = false
 		var tracker = 0
-		while !slime_made && tracker < 100:
+		while !slime_made and tracker < 100:
 			var random_num = floor(rand_range(0, slime_spaces.size()))
 			var curr_x = slime_spaces[random_num].x
 			var curr_y = slime_spaces[random_num].y
