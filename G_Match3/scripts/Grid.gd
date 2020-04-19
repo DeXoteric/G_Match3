@@ -32,6 +32,7 @@ var piece_two = null
 var last_place := Vector2.ZERO
 var last_direction := Vector2.ZERO
 var move_checked = false
+var damaged_slime = false
 
 signal make_ice
 signal damage_ice
@@ -333,8 +334,45 @@ func after_refill():
 				if match_at(i, j, all_pieces[i][j].color):
 					find_matches()
 					return
+	if !damaged_slime:
+		generate_slime()
 	state = MOVE
 	move_checked = false
+	damaged_slime = false
+
+
+func generate_slime():
+	if slime_spaces.size() > 0:
+		var slime_made = false
+		var tracker = 0
+		while !slime_made && tracker < 100:
+			var random_num = floor(rand_range(0, slime_spaces.size()))
+			var curr_x = slime_spaces[random_num].x
+			var curr_y = slime_spaces[random_num].y
+			var neighbor = find_normal_neighbor(curr_x, curr_y)
+			if neighbor != null:
+				all_pieces[neighbor.x][neighbor.y].queue_free()
+				all_pieces[neighbor.x][neighbor.y] = null
+				slime_spaces.append(Vector2(neighbor.x, neighbor.y))
+				emit_signal("make_slime", Vector2(neighbor.x, neighbor.y))
+				slime_made = true
+			tracker += 1
+
+
+func find_normal_neighbor(column, row):
+	if is_in_grid(Vector2(column + 1, row)):
+		if all_pieces[column + 1][row] != null:
+			return Vector2(column + 1, row)
+	if is_in_grid(Vector2(column - 1, row)):
+		if all_pieces[column - 1][row] != null:
+			return Vector2(column - 1, row)
+	if is_in_grid(Vector2(column, row + 1)):
+		if all_pieces[column][row + 1] != null:
+			return Vector2(column, row + 1)
+	if is_in_grid(Vector2(column, row - 1)):
+		if all_pieces[column][row - 1] != null:
+			return Vector2(column, row - 1)
+	return null
 
 
 func _on_DestroyTimer_timeout():
@@ -362,6 +400,7 @@ func _on_ConcreteHolder_remove_concrete(place):
 
 
 func _on_SlimeHolder_remove_slime(place):
+	damaged_slime = true
 	for i in range(slime_spaces.size() - 1, -1, -1):
 		if slime_spaces[i] == place:
 			slime_spaces.remove(i)
