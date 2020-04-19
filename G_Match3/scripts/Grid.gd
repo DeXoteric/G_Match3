@@ -12,6 +12,7 @@ export var y_offset: int
 export var empty_spaces: PoolVector2Array
 export var ice_spaces: PoolVector2Array
 export var lock_spaces: PoolVector2Array
+export var concrete_spaces: PoolVector2Array
 
 var possible_pieces = [
 preload("res://scenes/BluePiece.tscn"),
@@ -35,6 +36,8 @@ signal make_ice
 signal damage_ice
 signal make_lock
 signal damage_lock
+signal make_concrete
+signal damage_concrete
 
 
 func _ready():
@@ -44,15 +47,18 @@ func _ready():
 	spawn_pieces()
 	spawn_ice()
 	spawn_locks()
+	spawn_concrete()
 
 
-func _process(delta):
+func _process(_delta):
 	if state == MOVE:
 		touch_input()
 
 
 func restricted_fill(place):
 	if is_in_array(empty_spaces, place):
+		return true
+	if is_in_array(concrete_spaces, place):
 		return true
 	return false
 
@@ -68,6 +74,12 @@ func is_in_array(array, item):
 		if array[i] == item:
 			return true
 	return false
+
+
+func remove_from_array(array, item):
+	for i in range(array.size() - 1, -1, -1):
+		if array[i] == item:
+			array.remove(i)
 
 
 func make_2d_array():
@@ -103,6 +115,11 @@ func spawn_ice():
 func spawn_locks():
 	for i in lock_spaces.size():
 		emit_signal("make_lock", lock_spaces[i])
+
+
+func spawn_concrete():
+	for i in concrete_spaces.size():
+		emit_signal("make_concrete", concrete_spaces[i])
 
 
 func match_at(i, j, color):
@@ -238,9 +255,21 @@ func destroy_matched():
 		swap_back()
 
 
+func check_concrete(column, row):
+	if column < width - 1:
+		emit_signal("damage_concrete", Vector2(column + 1, row))
+	if column > 0:
+		emit_signal("damage_concrete", Vector2(column - 1, row))
+	if row < height - 1:
+		emit_signal("damage_concrete", Vector2(column, row + 1))
+	if row > 0:
+		emit_signal("damage_concrete", Vector2(column, row - 1))
+
+
 func damage_special(column, row):
 	emit_signal("damage_ice", Vector2(column, row))
 	emit_signal("damage_lock", Vector2(column, row))
+	check_concrete(column, row)
 
 
 func collapse_columns():
@@ -302,3 +331,8 @@ func _on_LockHolder_remove_lock(place):
 		if lock_spaces[i] == place:
 			lock_spaces.remove(i)
 
+
+func _on_ConcreteHolder_remove_concrete(place):
+	for i in range(concrete_spaces.size() - 1, -1, -1):
+		if concrete_spaces[i] == place:
+			concrete_spaces.remove(i)
