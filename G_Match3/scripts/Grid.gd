@@ -13,6 +13,7 @@ export var empty_spaces: PoolVector2Array
 export var ice_spaces: PoolVector2Array
 export var lock_spaces: PoolVector2Array
 export var concrete_spaces: PoolVector2Array
+export var slime_spaces: PoolVector2Array
 
 var possible_pieces = [
 preload("res://scenes/BluePiece.tscn"),
@@ -38,6 +39,8 @@ signal make_lock
 signal damage_lock
 signal make_concrete
 signal damage_concrete
+signal make_slime
+signal damage_slime
 
 
 func _ready():
@@ -48,6 +51,7 @@ func _ready():
 	spawn_ice()
 	spawn_locks()
 	spawn_concrete()
+	spawn_slime()
 
 
 func _process(_delta):
@@ -59,6 +63,8 @@ func restricted_fill(place):
 	if is_in_array(empty_spaces, place):
 		return true
 	if is_in_array(concrete_spaces, place):
+		return true
+	if is_in_array(slime_spaces, place):
 		return true
 	return false
 
@@ -120,6 +126,11 @@ func spawn_locks():
 func spawn_concrete():
 	for i in concrete_spaces.size():
 		emit_signal("make_concrete", concrete_spaces[i])
+
+
+func spawn_slime():
+	for i in slime_spaces.size():
+		emit_signal("make_slime", slime_spaces[i])
 
 
 func match_at(i, j, color):
@@ -266,10 +277,22 @@ func check_concrete(column, row):
 		emit_signal("damage_concrete", Vector2(column, row - 1))
 
 
+func check_slime(column, row):
+	if column < width - 1:
+		emit_signal("damage_slime", Vector2(column + 1, row))
+	if column > 0:
+		emit_signal("damage_slime", Vector2(column - 1, row))
+	if row < height - 1:
+		emit_signal("damage_slime", Vector2(column, row + 1))
+	if row > 0:
+		emit_signal("damage_slime", Vector2(column, row - 1))
+
+
 func damage_special(column, row):
 	emit_signal("damage_ice", Vector2(column, row))
 	emit_signal("damage_lock", Vector2(column, row))
 	check_concrete(column, row)
+	check_slime(column, row)
 
 
 func collapse_columns():
@@ -336,3 +359,9 @@ func _on_ConcreteHolder_remove_concrete(place):
 	for i in range(concrete_spaces.size() - 1, -1, -1):
 		if concrete_spaces[i] == place:
 			concrete_spaces.remove(i)
+
+
+func _on_SlimeHolder_remove_slime(place):
+	for i in range(slime_spaces.size() - 1, -1, -1):
+		if slime_spaces[i] == place:
+			slime_spaces.remove(i)
