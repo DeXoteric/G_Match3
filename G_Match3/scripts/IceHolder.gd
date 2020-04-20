@@ -14,7 +14,6 @@ func make_2d_array():
 			array[i].append(null)
 	return array
 
-
 func _on_Grid_make_ice(board_position):
 	if ice_pieces.size() == 0:
 		ice_pieces = make_2d_array()
@@ -22,7 +21,6 @@ func _on_Grid_make_ice(board_position):
 	add_child(current)
 	current.position = Vector2(board_position.x * 64 + 64, -board_position.y * 64 + 800)
 	ice_pieces[board_position.x][board_position.y] = current
-
 
 func _on_Grid_damage_ice(board_position):
 	if ice_pieces[board_position.x][board_position.y] != null:

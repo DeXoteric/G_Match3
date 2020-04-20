@@ -16,7 +16,6 @@ func make_2d_array():
 			array[i].append(null)
 	return array
 
-
 func _on_Grid_make_slime(board_position):
 	if slime_pieces.size() == 0:
 		slime_pieces = make_2d_array()
@@ -24,7 +23,6 @@ func _on_Grid_make_slime(board_position):
 	add_child(current)
 	current.position = Vector2(board_position.x * 64 + 64, -board_position.y * 64 + 800)
 	slime_pieces[board_position.x][board_position.y] = current
-
 
 func _on_Grid_damage_slime(board_position):
 	if slime_pieces[board_position.x][board_position.y] != null:
