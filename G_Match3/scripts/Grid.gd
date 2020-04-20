@@ -9,6 +9,7 @@ export var x_start: int
 export var y_start: int
 export var offset: int
 export var y_offset: int
+export var piece_value: int
 export var empty_spaces: PoolVector2Array
 export var ice_spaces: PoolVector2Array
 export var lock_spaces: PoolVector2Array
@@ -34,6 +35,7 @@ var last_place := Vector2.ZERO
 var last_direction := Vector2.ZERO
 var move_checked = false
 var damaged_slime = false
+var streak := 1
 
 signal make_ice
 signal damage_ice
@@ -43,6 +45,7 @@ signal make_concrete
 signal damage_concrete
 signal make_slime
 signal damage_slime
+signal update_score
 
 
 func _ready():
@@ -308,6 +311,7 @@ func destroy_matched():
 					was_matched = true
 					all_pieces[i][j].queue_free()
 					all_pieces[i][j] = null
+					emit_signal("update_score", piece_value * streak)
 	move_checked = true
 	if was_matched:
 		get_parent().get_node("CollapseTimer").start()
@@ -354,6 +358,7 @@ func collapse_columns():
 	get_parent().get_node("RefillTimer").start()
 
 func refill_columns():
+	streak += 1
 	for i in width:
 		for j in height:
 			if all_pieces[i][j] == null and !restricted_fill(Vector2(i, j)):
@@ -380,6 +385,7 @@ func after_refill():
 	if !damaged_slime:
 		generate_slime()
 	state = MOVE
+	streak = 1
 	move_checked = false
 	damaged_slime = false
 
