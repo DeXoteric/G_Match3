@@ -17,8 +17,8 @@ export var slime_spaces: PoolVector2Array
 
 var possible_pieces = [
 preload("res://scenes/BluePiece.tscn"),
-preload("res://scenes/GreenPiece.tscn"),
-preload("res://scenes/LightGreenPiece.tscn"),
+#preload("res://scenes/GreenPiece.tscn"),
+#preload("res://scenes/LightGreenPiece.tscn"),
 preload("res://scenes/OrangePiece.tscn"),
 preload("res://scenes/PinkPiece.tscn"),
 preload("res://scenes/YellowPiece.tscn")
@@ -268,13 +268,13 @@ func find_bombs():
 		if col_matched == 5 or row_matched == 5:
 			print("color bomb")
 			return
-		if col_matched >= 3 and row_matched >= 3:
+		elif col_matched >= 3 and row_matched >= 3:
 			make_bomb(0, current_color)
 			return
-		if col_matched == 4:
+		elif col_matched == 4:
 			make_bomb(1, current_color)
 			return
-		if row_matched == 4:
+		elif row_matched == 4:
 			make_bomb(2, current_color)
 			return
 
