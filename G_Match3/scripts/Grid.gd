@@ -59,6 +59,7 @@ signal update_score
 signal update_counter
 signal game_over
 signal setup_max_score
+signal check_goal
 
 func _ready():
 	state = MOVE
@@ -360,6 +361,7 @@ func destroy_matched():
 		for j in height:
 			if all_pieces[i][j] != null:
 				if all_pieces[i][j].matched:
+					emit_signal("check_goal", all_pieces[i][j].color)
 					damage_special(i, j)
 					was_matched = true
 					all_pieces[i][j].queue_free()

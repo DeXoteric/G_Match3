@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://assets/UI/Bottom UI v 2.png" type="Texture" id=1]
 [ext_resource path="res://scenes/TopUI.tscn" type="PackedScene" id=2]
@@ -10,6 +10,8 @@
 [ext_resource path="res://scripts/SlimeHolder.gd" type="Script" id=8]
 [ext_resource path="res://scenes/GameOverPanel.tscn" type="PackedScene" id=9]
 [ext_resource path="res://scenes/Sinker.tscn" type="PackedScene" id=10]
+[ext_resource path="res://scripts/GoalHolder.gd" type="Script" id=11]
+[ext_resource path="res://scenes/Goal.tscn" type="PackedScene" id=12]
 
 [node name="GameWIndow" type="Node2D"]
 
@@ -74,6 +76,18 @@ wait_time = 0.5
 one_shot = true
 
 [node name="GameOverPanel" parent="." instance=ExtResource( 9 )]
+
+[node name="GoalHolder" type="Node" parent="."]
+script = ExtResource( 11 )
+
+[node name="Goal" parent="GoalHolder" instance=ExtResource( 12 )]
+max_needed = 5
+goal_string = "blue"
+
+[node name="Goal2" parent="GoalHolder" instance=ExtResource( 12 )]
+max_needed = 5
+goal_string = "yellow"
+[connection signal="check_goal" from="Grid" to="GoalHolder" method="_on_Grid_check_goal"]
 [connection signal="damage_concrete" from="Grid" to="ConcreteHolder" method="_on_Grid_damage_concrete"]
 [connection signal="damage_ice" from="Grid" to="IceHolder" method="_on_Grid_damage_ice"]
 [connection signal="damage_lock" from="Grid" to="LockHolder" method="_on_Grid_damage_lock"]
