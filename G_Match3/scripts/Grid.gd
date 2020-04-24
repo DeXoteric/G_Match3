@@ -36,6 +36,8 @@ var last_direction := Vector2.ZERO
 var move_checked = false
 var damaged_slime = false
 var streak := 1
+var color_bomb_used = false
+var particle_effect = preload("res://scenes/ParticleEffect.tscn")
 
 signal make_ice
 signal damage_ice
@@ -188,6 +190,7 @@ func swap_pieces(column, row, direction):
 
 func is_color_bomb(piece_1, piece_2):
 	if piece_1.color == "Color" or piece_2.color == "Color":
+		color_bomb_used = true
 		return true
 	return false
 
@@ -327,6 +330,7 @@ func destroy_matched():
 					was_matched = true
 					all_pieces[i][j].queue_free()
 					all_pieces[i][j] = null
+					make_effect(particle_effect, i, j)
 					emit_signal("update_score", piece_value * streak)
 	move_checked = true
 	if was_matched:
@@ -334,6 +338,11 @@ func destroy_matched():
 	else:
 		swap_back()
 	current_matches.clear()
+
+func make_effect(effect, column, row):
+	var current = effect.instance()
+	current.position = grid_to_pixel(column, row)
+	add_child(current)
 
 func check_concrete(column, row):
 	if column < width - 1:
@@ -366,14 +375,14 @@ func match_color(color):
 		for j in height:
 			if all_pieces[i][j] != null:
 				if all_pieces[i][j].color == color:
-					match_and_dim(all_pieces[i][i])
+					match_and_dim(all_pieces[i][j])
 					add_to_array(Vector2(i, j))
 
 func clear_board():
 	for i in width:
 		for j in height:
 			if all_pieces[i][j] != null:
-				match_and_dim(all_pieces[i][i])
+				match_and_dim(all_pieces[i][j])
 				add_to_array(Vector2(i, j))
 
 func collapse_columns():
@@ -419,6 +428,7 @@ func after_refill():
 	streak = 1
 	move_checked = false
 	damaged_slime = false
+	color_bomb_used = false
 
 func generate_slime():
 	if slime_spaces.size() > 0:
