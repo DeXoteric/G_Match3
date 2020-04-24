@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/Quit Button.png-f91e41d669698a84505e9a683920127d.stex"
+path="res://.import/GameOver Background.png-b0f36b22ddc9cfc85abed62c04447dc9.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Quit Button.png"
-dest_files=[ "res://.import/Quit Button.png-f91e41d669698a84505e9a683920127d.stex" ]
+source_file="res://assets/effects/GameOver Background.png"
+dest_files=[ "res://.import/GameOver Background.png-b0f36b22ddc9cfc85abed62c04447dc9.stex" ]
 
 [params]
 

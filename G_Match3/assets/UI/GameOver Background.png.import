@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/Restart Button.png-c702e2a697ec43d6d9ead23d5ba78fe2.stex"
+path="res://.import/GameOver Background.png-20ee3bc0ea21b37d8b819be75a09ae6a.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Restart Button.png"
-dest_files=[ "res://.import/Restart Button.png-c702e2a697ec43d6d9ead23d5ba78fe2.stex" ]
+source_file="res://assets/UI/GameOver Background.png"
+dest_files=[ "res://.import/GameOver Background.png-20ee3bc0ea21b37d8b819be75a09ae6a.stex" ]
 
 [params]
 

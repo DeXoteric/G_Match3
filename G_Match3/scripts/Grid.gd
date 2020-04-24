@@ -52,6 +52,7 @@ signal make_slime
 signal damage_slime
 signal update_score
 signal update_counter
+signal game_over
 
 func _ready():
 	state = MOVE
@@ -505,7 +506,7 @@ func find_adjacent_pieces(column, row):
 					all_pieces[column + i][row + j].matched = true
 
 func declare_game_over():
-	print("Game Over")
+	emit_signal("game_over")
 	state = WAIT
 
 func _on_DestroyTimer_timeout():
