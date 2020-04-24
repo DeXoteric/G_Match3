@@ -15,6 +15,8 @@ export var ice_spaces: PoolVector2Array
 export var lock_spaces: PoolVector2Array
 export var concrete_spaces: PoolVector2Array
 export var slime_spaces: PoolVector2Array
+export var current_counter_value: int
+export var is_moves: bool
 
 var possible_pieces = [
 preload("res://scenes/BluePiece.tscn"),
@@ -38,6 +40,7 @@ var damaged_slime = false
 var streak := 1
 var color_bomb_used = false
 var particle_effect = preload("res://scenes/ParticleEffect.tscn")
+var animated_effect = preload("res://scenes/AnimatedExplosion.tscn")
 
 signal make_ice
 signal damage_ice
@@ -48,7 +51,7 @@ signal damage_concrete
 signal make_slime
 signal damage_slime
 signal update_score
-
+signal update_counter
 
 func _ready():
 	state = MOVE
@@ -59,6 +62,9 @@ func _ready():
 	spawn_locks()
 	spawn_concrete()
 	spawn_slime()
+	emit_signal("update_counter", current_counter_value)
+	if !is_moves:
+		$Timer.start()
 
 func _process(_delta):
 	if state == MOVE:
@@ -271,32 +277,33 @@ func match_and_dim(item):
 	item.dim()
 
 func find_bombs():
-	for i in current_matches.size():
-		var current_column = current_matches[i].x
-		var current_row = current_matches[i].y
-		var current_color = all_pieces[current_column][current_row].color
-		var col_matched = 0
-		var row_matched = 0
-		for j in current_matches.size():
-			var this_column = current_matches[j].x
-			var this_row = current_matches[j].y
-			var this_color = all_pieces[current_column][current_row].color
-			if this_column == current_column and this_color == current_color:
-				col_matched += 1
-			if this_row == current_row and this_color == current_color:
-				row_matched += 1
-		if col_matched == 5 or row_matched == 5:
-			make_bomb(3, current_color)
-			return
-		elif col_matched >= 3 and row_matched >= 3:
-			make_bomb(0, current_color)
-			return
-		elif col_matched == 4:
-			make_bomb(1, current_color)
-			return
-		elif row_matched == 4:
-			make_bomb(2, current_color)
-			return
+	if !color_bomb_used:
+		for i in current_matches.size():
+			var current_column = current_matches[i].x
+			var current_row = current_matches[i].y
+			var current_color = all_pieces[current_column][current_row].color
+			var col_matched = 0
+			var row_matched = 0
+			for j in current_matches.size():
+				var this_column = current_matches[j].x
+				var this_row = current_matches[j].y
+				var this_color = all_pieces[current_column][current_row].color
+				if this_column == current_column and this_color == current_color:
+					col_matched += 1
+				if this_row == current_row and this_color == current_color:
+					row_matched += 1
+			if col_matched == 5 or row_matched == 5:
+				make_bomb(3, current_color)
+				return
+			elif col_matched >= 3 and row_matched >= 3:
+				make_bomb(0, current_color)
+				return
+			elif col_matched == 4:
+				make_bomb(1, current_color)
+				return
+			elif row_matched == 4:
+				make_bomb(2, current_color)
+				return
 
 func make_bomb(bomb_type, color):
 	for i in current_matches.size():
@@ -331,6 +338,7 @@ func destroy_matched():
 					all_pieces[i][j].queue_free()
 					all_pieces[i][j] = null
 					make_effect(particle_effect, i, j)
+					make_effect(animated_effect, i, j)
 					emit_signal("update_score", piece_value * streak)
 	move_checked = true
 	if was_matched:
@@ -429,6 +437,11 @@ func after_refill():
 	move_checked = false
 	damaged_slime = false
 	color_bomb_used = false
+	if is_moves:
+		current_counter_value -= 1
+		emit_signal("update_counter")
+		if current_counter_value == 0:
+			declare_game_over()
 
 func generate_slime():
 	if slime_spaces.size() > 0:
@@ -491,6 +504,10 @@ func find_adjacent_pieces(column, row):
 						match_all_in_column(i)
 					all_pieces[column + i][row + j].matched = true
 
+func declare_game_over():
+	print("Game Over")
+	state = WAIT
+
 func _on_DestroyTimer_timeout():
 	destroy_matched()
 
@@ -515,3 +532,11 @@ func _on_SlimeHolder_remove_slime(place):
 	for i in range(slime_spaces.size() - 1, -1, -1):
 		if slime_spaces[i] == place:
 			slime_spaces.remove(i)
+
+func _on_Timer_timeout():
+	current_counter_value -= 1
+	emit_signal("update_counter")
+	if current_counter_value == 0:
+		declare_game_over()
+		$Timer.stop()
+

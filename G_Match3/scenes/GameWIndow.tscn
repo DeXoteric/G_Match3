@@ -39,6 +39,10 @@ y_start = 800
 offset = 64
 y_offset = 3
 piece_value = 10
+current_counter_value = 10
+is_moves = true
+
+[node name="Timer" type="Timer" parent="Grid"]
 
 [node name="IceHolder" type="Node2D" parent="."]
 script = ExtResource( 5 )
@@ -71,7 +75,9 @@ one_shot = true
 [connection signal="make_ice" from="Grid" to="IceHolder" method="_on_Grid_make_ice"]
 [connection signal="make_lock" from="Grid" to="LockHolder" method="_on_Grid_make_lock"]
 [connection signal="make_slime" from="Grid" to="SlimeHolder" method="_on_Grid_make_slime"]
+[connection signal="update_counter" from="Grid" to="TopUI" method="_on_Grid_update_counter"]
 [connection signal="update_score" from="Grid" to="TopUI" method="_on_Grid_update_score"]
+[connection signal="timeout" from="Grid/Timer" to="Grid" method="_on_Timer_timeout"]
 [connection signal="remove_lock" from="LockHolder" to="Grid" method="_on_LockHolder_remove_lock"]
 [connection signal="remove_concrete" from="ConcreteHolder" to="Grid" method="_on_ConcreteHolder_remove_concrete"]
 [connection signal="remove_slime" from="SlimeHolder" to="Grid" method="_on_SlimeHolder_remove_slime"]
