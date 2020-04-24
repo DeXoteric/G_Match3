@@ -20,6 +20,7 @@ export var is_moves: bool
 export var sinker_piece: PackedScene
 export var sinkers_in_scene: bool
 export var max_sinkers: int
+export var max_score: int
 
 var possible_pieces = [
 preload("res://scenes/BluePiece.tscn"),
@@ -57,6 +58,7 @@ signal damage_slime
 signal update_score
 signal update_counter
 signal game_over
+signal setup_max_score
 
 func _ready():
 	state = MOVE
@@ -70,6 +72,7 @@ func _ready():
 	spawn_concrete()
 	spawn_slime()
 	emit_signal("update_counter", current_counter_value)
+	emit_signal("setup_max_score", max_score)
 	if !is_moves:
 		$Timer.start()
 
