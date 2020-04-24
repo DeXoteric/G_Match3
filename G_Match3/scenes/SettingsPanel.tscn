@@ -1,10 +1,11 @@
 [gd_scene load_steps=6 format=2]
 
-[ext_resource path="res://assets/Back Button.png" type="Texture" id=1]
-[ext_resource path="res://assets/Sound On Button.png" type="Texture" id=2]
-[ext_resource path="res://assets/godot match 3 settings bar.png" type="Texture" id=3]
+[ext_resource path="res://assets/UI/Back Button.png" type="Texture" id=1]
+[ext_resource path="res://assets/UI/Sound On Button.png" type="Texture" id=2]
+[ext_resource path="res://assets/UI/godot match 3 settings bar.png" type="Texture" id=3]
 [ext_resource path="res://scenes/BaseMenuPanel.tscn" type="PackedScene" id=4]
 [ext_resource path="res://scripts/SettingsPanel.gd" type="Script" id=5]
+
 
 [node name="SettingsPanel" instance=ExtResource( 4 )]
 script = ExtResource( 5 )
